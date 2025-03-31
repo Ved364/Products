@@ -17,7 +17,6 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { useRouter } from "next/navigation";
 import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 import { IProducts } from "@/types/product";
-import AuthGuard from "@/component/auth-guard";
 
 const CartPage = () => {
   const [cartData, setCartData] = useState<IProducts[]>([]);
@@ -39,6 +38,7 @@ const CartPage = () => {
     const cartKey = localStorage.getItem("carts");
     const p = cartKey ? JSON.parse(cartKey) : {};
     const userCarts: IProducts[] = p[loggedInUser];
+    console.log("increment userCart", userCarts);
 
     const updatedUserProducts = userCarts.map((userCart) =>
       userCart.id === cart.id
@@ -57,6 +57,7 @@ const CartPage = () => {
         ...prevQuantities,
         [cart.id]: specificUserProduct.quantity + 1,
       }));
+      console.log(specificUserProduct?.quantity * specificUserProduct?.price);
     }
 
     calculateTotalQuantity(updatedUserProducts);
@@ -212,6 +213,7 @@ const CartPage = () => {
     const cartKey = localStorage.getItem("carts");
     const p = cartKey ? JSON.parse(cartKey) : {};
     const userCarts: IProducts[] = p[loggedInUser] || [];
+    console.log("CartUserCart", userCarts);
 
     const initialQuantities = Object.fromEntries(
       userCarts.map((product: IProducts) => [product.id, product.quantity])
@@ -264,148 +266,147 @@ const CartPage = () => {
       localStorage.getItem("acknowledgedUpdates") || "{}"
     );
     setAcknowledgedUpdates(acknowledgedUpdates);
-    setLoggedInUser(JSON.parse(localStorage.getItem("loggedInUser") || "null"));
+    setLoggedInUser(JSON.parse(localStorage.getItem("loggedInUser") || '""'));
   }, []);
 
+  console.log(cartData);
   return (
     <>
-      <AuthGuard>
-        <Container>
-          {Object.keys(priceUpdates).length > 0 && (
-            <Box
-              sx={{
-                backgroundColor: "yellow",
-                padding: "10px",
-                marginBottom: "10px",
-              }}
-            >
-              <Typography variant="h6" color="error">
-                Price updates detected:
-              </Typography>
-              {Object.entries(priceUpdates).map(
-                ([id, { oldPrice, newPrice }]) => (
-                  <Typography key={id}>
-                    {`"${
-                      cartData.find((item) => item.id === id)?.title ||
-                      "Unknown Product"
-                    }" - Price updated from ${oldPrice} to ${newPrice}`}
-                  </Typography>
-                )
-              )}
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAcknowledge}
-              >
-                Acknowledge
-              </Button>
-            </Box>
-          )}
-          <Typography variant="h4" textAlign="center" mt={3}>
-            Cart
-          </Typography>
-          <Button variant="contained" onClick={() => router.push("/")}>
-            Go to Products
-          </Button>
+      <Container>
+        {Object.keys(priceUpdates).length > 0 && (
           <Box
             sx={{
-              margin: "25px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+              backgroundColor: "yellow",
+              padding: "10px",
+              marginBottom: "10px",
             }}
           >
-            {cartData.length > 0 ? (
-              cartData.map((cart) => (
-                <Card
-                  key={cart.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-around",
-                    alignItems: "center",
-                    width: "70%",
-                    margin: "15px",
-                  }}
-                  elevation={6}
-                >
-                  <CardMedia
-                    component="img"
-                    image={cart.image}
-                    alt={cart.title}
-                    sx={{
-                      height: "100px",
-                      width: "100px",
-                      objectFit: "contain",
-                    }}
-                  />
-                  <CardContent sx={{ width: "100%" }}>
-                    <Typography variant="h6">{cart.title}</Typography>
-                    <Typography
-                      variant="h5"
-                      sx={{ display: "flex", alignItems: "center" }}
-                    >
-                      <CurrencyRupeeIcon />
-                      {cart.price} * {quantities[cart.id]}
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      color="green"
-                      sx={{ display: "flex", alignItems: "center" }}
-                    >
-                      <CurrencyRupeeIcon />
-                      {cart.price * quantities[cart.id]}
-                    </Typography>
-                    <Card sx={{ width: "154px", height: "46px" }} elevation={4}>
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="space-evenly"
-                      >
-                        <RemoveIcon
-                          sx={{ cursor: "pointer" }}
-                          onClick={() => handleDecrement(cart)}
-                        />
-                        <Divider orientation="vertical" flexItem />
-                        <Typography variant="h6">
-                          {quantities[cart.id]}
-                        </Typography>
-                        <Divider orientation="vertical" flexItem />
-                        <AddIcon
-                          sx={{ cursor: "pointer" }}
-                          onClick={() => handleIncrement(cart)}
-                        />
-                      </Stack>
-                    </Card>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <>
-                <Typography
-                  variant="h5"
-                  sx={{ textAlign: "center", marginTop: "20px" }}
-                >
-                  Cart is empty.
-                </Typography>
-                <Button size="large" onClick={() => router.push("/")}>
-                  Go to Products
-                </Button>
-              </>
-            )}
-            <Typography variant="h5">
-              Total quantity: {totalProductQuantity} Total Amount:{" "}
-              {Math.ceil(totalAmount)}
+            <Typography variant="h6" color="error">
+              Price updates detected:
             </Typography>
+            {Object.entries(priceUpdates).map(
+              ([id, { oldPrice, newPrice }]) => (
+                <Typography key={id}>
+                  {`"${
+                    cartData.find((item) => item.id === id)?.title ||
+                    "Unknown Product"
+                  }" - Price updated from ${oldPrice} to ${newPrice}`}
+                </Typography>
+              )
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAcknowledge}
+            >
+              Acknowledge
+            </Button>
           </Box>
-          <Button
-            variant="contained"
-            onClick={handlePlaceOrder}
-            disabled={!acknowledged && Object.keys(priceUpdates).length > 0}
-          >
-            Place Order
-          </Button>
-        </Container>
-      </AuthGuard>
+        )}
+        <Typography variant="h4" textAlign="center" mt={3}>
+          Cart
+        </Typography>
+        <Button variant="contained" onClick={() => router.push("/")}>
+          Go to Products
+        </Button>
+        <Box
+          sx={{
+            margin: "25px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          {cartData.length > 0 ? (
+            cartData.map((cart) => (
+              <Card
+                key={cart.id}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-around",
+                  alignItems: "center",
+                  width: "70%",
+                  margin: "15px",
+                }}
+                elevation={6}
+              >
+                <CardMedia
+                  component="img"
+                  image={cart.image}
+                  alt={cart.title}
+                  sx={{
+                    height: "100px",
+                    width: "100px",
+                    objectFit: "contain",
+                  }}
+                />
+                <CardContent sx={{ width: "100%" }}>
+                  <Typography variant="h6">{cart.title}</Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <CurrencyRupeeIcon />
+                    {cart.price} * {quantities[cart.id]}
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    color="green"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <CurrencyRupeeIcon />
+                    {cart.price * quantities[cart.id]}
+                  </Typography>
+                  <Card sx={{ width: "154px", height: "46px" }} elevation={4}>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="space-evenly"
+                    >
+                      <RemoveIcon
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleDecrement(cart)}
+                      />
+                      <Divider orientation="vertical" flexItem />
+                      <Typography variant="h6">
+                        {quantities[cart.id]}
+                      </Typography>
+                      <Divider orientation="vertical" flexItem />
+                      <AddIcon
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleIncrement(cart)}
+                      />
+                    </Stack>
+                  </Card>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <>
+              <Typography
+                variant="h5"
+                sx={{ textAlign: "center", marginTop: "20px" }}
+              >
+                Cart is empty.
+              </Typography>
+              <Button size="large" onClick={() => router.push("/")}>
+                Go to Products
+              </Button>
+            </>
+          )}
+          <Typography variant="h5">
+            Total quantity: {totalProductQuantity} Total Amount:{" "}
+            {Math.ceil(totalAmount)}
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          onClick={handlePlaceOrder}
+          disabled={!acknowledged && Object.keys(priceUpdates).length > 0}
+        >
+          Place Order
+        </Button>
+      </Container>
     </>
   );
 };

@@ -1,6 +1,5 @@
 "use client";
 
-import AuthGuard from "@/component/auth-guard";
 import CustomTable from "@/component/custom-table";
 import { ITableColumn } from "@/types/common";
 import { IOrder } from "@/types/orders";
@@ -20,10 +19,16 @@ const COLUMNS: ITableColumn[] = [
 
 const OrdersPage = () => {
   const [userOrders, setUserOrders] = useState<IOrder[]>([]);
+  const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    setLoggedInUser(user);
 
     const ordersData = JSON.parse(localStorage.getItem("orders") || "{}");
 
@@ -33,36 +38,36 @@ const OrdersPage = () => {
     }
   }, [router]);
 
+  if (!loggedInUser) {
+    return null;
+  }
+
   return (
-    <>
-      <AuthGuard>
-        <Container sx={{ padding: "25px" }}>
-          <Typography variant="h4" sx={{ textAlign: "center" }}>
-            Your Orders
-          </Typography>
-          <Box sx={{ justifySelf: "flex-end" }}>
-            <Button variant="contained" onClick={() => router.push("/")}>
-              Go to Products
-            </Button>
-          </Box>
+    <Container sx={{ padding: "25px" }}>
+      <Typography variant="h4" sx={{ textAlign: "center" }}>
+        Your Orders
+      </Typography>
+      <Box sx={{ justifySelf: "flex-end" }}>
+        <Button variant="contained" onClick={() => router.push("/")}>
+          Go to Products
+        </Button>
+      </Box>
 
-          {userOrders.length > 0 ? (
-            <Box sx={{ my: 4 }}>
-              <Divider sx={{ my: 2 }} />
+      {userOrders.length > 0 ? (
+        <Box sx={{ my: 4 }}>
+          <Divider sx={{ my: 2 }} />
 
-              <CustomTable columns={COLUMNS} data={userOrders} />
-            </Box>
-          ) : (
-            <Typography
-              variant="h5"
-              sx={{ textAlign: "center", marginTop: "20px" }}
-            >
-              No orders found.
-            </Typography>
-          )}
-        </Container>
-      </AuthGuard>
-    </>
+          <CustomTable columns={COLUMNS} data={userOrders} />
+        </Box>
+      ) : (
+        <Typography
+          variant="h5"
+          sx={{ textAlign: "center", marginTop: "20px" }}
+        >
+          No orders found.
+        </Typography>
+      )}
+    </Container>
   );
 };
 

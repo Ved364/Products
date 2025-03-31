@@ -1,10 +1,11 @@
 "use client";
 
-import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const userEmail = localStorage.getItem("loggedInUserEmail");
@@ -12,9 +13,9 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     if (userEmail) {
       setIsAuthenticated(true);
     } else {
-      redirect("/login");
+      router.push("/login");
     }
-  }, []);
+  }, [router]);
 
   if (!isAuthenticated) {
     return null;

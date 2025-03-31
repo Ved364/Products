@@ -7,7 +7,6 @@ import { FormProvider, useForm } from "react-hook-form";
 import RHFTextFieldArea from "./RhfTextField";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import AuthGuard from "./auth-guard";
 
 type Props = {
   id?: string | undefined;
@@ -16,6 +15,7 @@ type Props = {
 const ProductForm = (props: Props) => {
   const { id } = props;
   const [products, setProducts] = useState<IProducts[]>([]);
+  const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
   const product = products.find((product: IProducts) => product.id === id);
   const router = useRouter();
 
@@ -77,85 +77,96 @@ const ProductForm = (props: Props) => {
     methods.reset(defaultValues);
   }, [defaultValues, methods]);
 
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+    if (!user) {
+      router.push("/login");
+    } else {
+      setLoggedInUser(user);
+    }
+  }, [router]);
+
+  if (!loggedInUser) {
+    return null;
+  }
+
   return (
     <>
-      <AuthGuard>
-        <FormProvider {...methods}>
-          <Container
+      <FormProvider {...methods}>
+        <Container
+          sx={{
+            padding: "15px",
+            height: "100vh",
+          }}
+        >
+          <Button variant="contained" onClick={() => router.push("/")}>
+            Go to Products
+          </Button>
+          <Box
             sx={{
-              padding: "15px",
-              height: "100vh",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            <Button variant="contained" onClick={() => router.push("/")}>
-              Go to Products
-            </Button>
-            <Box
+            <Card
+              component="form"
+              onSubmit={handleSubmit(onSubmit)}
+              elevation={6}
               sx={{
+                height: "500px",
+                width: "500px",
+                padding: "15px",
                 display: "flex",
+                flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
-              <Card
-                component="form"
-                onSubmit={handleSubmit(onSubmit)}
-                elevation={6}
-                sx={{
-                  height: "500px",
-                  width: "500px",
-                  padding: "15px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Typography variant="h4" pb={3}>
-                  {id ? "Edit Product" : "Add Product"}
-                </Typography>
-                <Box width="100%">
-                  <Stack spacing={3}>
-                    <RHFTextFieldArea
-                      name="image"
-                      label="Image Url"
-                      placeholder="https://t4.ftcdn.net/jpg/05/45/42/81/360_F_545428173_uyYWJoR9n5uJFYIWfDa2C49AzIECcU20.jpg"
-                      helperText={errors.image && errors.image.message}
-                    />
+              <Typography variant="h4" pb={3}>
+                {id ? "Edit Product" : "Add Product"}
+              </Typography>
+              <Box width="100%">
+                <Stack spacing={3}>
+                  <RHFTextFieldArea
+                    name="image"
+                    label="Image Url"
+                    placeholder="https://t4.ftcdn.net/jpg/05/45/42/81/360_F_545428173_uyYWJoR9n5uJFYIWfDa2C49AzIECcU20.jpg"
+                    helperText={errors.image && errors.image.message}
+                  />
 
-                    <RHFTextFieldArea
-                      name="title"
-                      label="Title"
-                      placeholder="Title"
-                      helperText={errors.title && errors.title.message}
-                    />
+                  <RHFTextFieldArea
+                    name="title"
+                    label="Title"
+                    placeholder="Title"
+                    helperText={errors.title && errors.title.message}
+                  />
 
-                    <RHFTextFieldArea
-                      name="price"
-                      label="Price"
-                      placeholder="Price"
-                      helperText={errors.price && errors.price.message}
-                    />
+                  <RHFTextFieldArea
+                    name="price"
+                    label="Price"
+                    placeholder="Price"
+                    helperText={errors.price && errors.price.message}
+                  />
 
-                    <RHFTextFieldArea
-                      name="quantity"
-                      label="Quantity"
-                      placeholder="Quantity"
-                      helperText={errors.price && errors.price.message}
-                    />
+                  <RHFTextFieldArea
+                    name="quantity"
+                    label="Quantity"
+                    placeholder="Quantity"
+                    helperText={errors.price && errors.price.message}
+                  />
 
-                    <Box textAlign="center">
-                      <Button type="submit">
-                        {id ? "Update Product" : "Add Product"}
-                      </Button>
-                    </Box>
-                  </Stack>
-                </Box>
-              </Card>
-            </Box>
-          </Container>
-        </FormProvider>
-      </AuthGuard>
+                  <Box textAlign="center">
+                    <Button type="submit">
+                      {id ? "Update Product" : "Add Product"}
+                    </Button>
+                  </Box>
+                </Stack>
+              </Box>
+            </Card>
+          </Box>
+        </Container>
+      </FormProvider>
     </>
   );
 };
