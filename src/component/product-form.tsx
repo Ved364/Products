@@ -84,6 +84,12 @@ const ProductForm = (props: Props) => {
     } else {
       setLoggedInUser(user);
     }
+
+    if (user !== "admin@microfox.in") {
+      router.push("/");
+      alert("Only admin can add or edit the products");
+      return;
+    }
   }, [router]);
 
   if (!loggedInUser) {
