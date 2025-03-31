@@ -25,11 +25,6 @@ const LoginPage = () => {
   const handleLogin = (data: ILogin) => {
     localStorage.setItem("loggedInUser", JSON.stringify(data.email));
     router.push("/");
-    console.log(data.email);
-  };
-
-  const handleRedirect = () => {
-    router.push("/");
   };
 
   return (
@@ -61,9 +56,6 @@ const LoginPage = () => {
               </Button>
             </CardContent>
           </FormProvider>
-          <Box sx={{ textAlign: "center" }}>
-            <Button onClick={handleRedirect}>Skip</Button>
-          </Box>
         </Card>
       </Box>
     </>

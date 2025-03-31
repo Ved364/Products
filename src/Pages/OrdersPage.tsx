@@ -1,5 +1,6 @@
 "use client";
 
+import AuthGuard from "@/component/auth-guard";
 import CustomTable from "@/component/custom-table";
 import { ITableColumn } from "@/types/common";
 import { IOrder } from "@/types/orders";
@@ -48,33 +49,47 @@ const OrdersPage = () => {
     const ordersData = JSON.parse(localStorage.getItem("orders") || "{}");
     setOrdersByUser(ordersData);
   }, []);
+
   return (
     <>
-      <Container sx={{ padding: "25px" }}>
-        <Button variant="contained" onClick={() => router.push("/")}>
-          Go to Products
-        </Button>
-
-        {Object.keys(ordersByUser).length > 0 ? (
-          Object.entries(ordersByUser).map(([user, orders]) => (
-            <Box key={user} sx={{ my: 4 }}>
-              <Typography variant="h5" sx={{ fontWeight: "bold", mt: 3 }}>
-                User: {user}
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-
-              <CustomTable columns={COLUMNS} data={orders} />
-            </Box>
-          ))
-        ) : (
-          <Typography
-            variant="h5"
-            sx={{ textAlign: "center", marginTop: "20px" }}
-          >
-            No orders found.
+      <AuthGuard>
+        <Container sx={{ padding: "25px" }}>
+          <Typography variant="h4" sx={{ textAlign: "center" }}>
+            Orders
           </Typography>
-        )}
-      </Container>
+          <Box justifySelf="flex-end">
+            <Button variant="contained" onClick={() => router.push("/")}>
+              Go to Products
+            </Button>
+          </Box>
+
+          {Object.keys(ordersByUser).length > 0 ? (
+            Object.entries(ordersByUser).map(([user, orders]) => {
+              const flattenedOrders = orders.flatMap((order) =>
+                Array.isArray(order) ? order : [order]
+              );
+
+              return (
+                <Box key={user} sx={{ my: 4 }}>
+                  <Typography variant="h5" sx={{ fontWeight: "bold", mt: 3 }}>
+                    User: {user}
+                  </Typography>
+                  <Divider sx={{ my: 2 }} />
+
+                  <CustomTable columns={COLUMNS} data={flattenedOrders} />
+                </Box>
+              );
+            })
+          ) : (
+            <Typography
+              variant="h5"
+              sx={{ textAlign: "center", marginTop: "20px" }}
+            >
+              No orders found.
+            </Typography>
+          )}
+        </Container>
+      </AuthGuard>
     </>
   );
 };

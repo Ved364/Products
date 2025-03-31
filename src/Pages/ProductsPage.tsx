@@ -23,6 +23,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { styled } from "@mui/material/styles";
 import Badge from "@mui/material/Badge";
 import { badgeClasses } from "@mui/material";
+import AuthGuard from "@/component/auth-guard";
 
 const CartBadge = styled(Badge)`
   & .${badgeClasses.badge} {
@@ -109,6 +110,30 @@ const ProductsPage = () => {
   const handleLogout = () => {
     localStorage.removeItem("loggedInUser");
     router.push("/login");
+  };
+
+  const handleAddButton = () => {
+    if (loggedInUser !== "admin@microfox.in") {
+      alert("Only admin can add products");
+      return;
+    }
+    router.push("/product/add");
+  };
+
+  const handleEditButton = (id: string) => {
+    if (loggedInUser !== "admin@microfox.in") {
+      alert("Only admin can edit products");
+      return;
+    }
+    router.push(`/product/edit/${id}`);
+  };
+
+  const handleOrders = () => {
+    if (loggedInUser !== "admin@microfox.in") {
+      router.push("/my-orders");
+      return;
+    }
+    router.push("/orders");
   };
 
   const isProductInCart = (productId: string) => {
@@ -206,8 +231,17 @@ const ProductsPage = () => {
 
   useEffect(() => {
     setProducts(JSON.parse(localStorage.getItem("products") ?? "[]"));
-    setLoggedInUser(JSON.parse(localStorage.getItem("loggedInUser") || '""'));
+    setLoggedInUser(JSON.parse(localStorage.getItem("loggedInUser") || "null"));
   }, []);
+
+  // useEffect(() => {
+  //   const user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+  //   if (!user) {
+  //     redirect("/login");
+  //   } else {
+  //     setLoggedInUser(user);
+  //   }
+  // }, []);
 
   useEffect(() => {
     const cartKey = localStorage.getItem("carts");
@@ -220,136 +254,151 @@ const ProductsPage = () => {
     updateCartLength();
   }, [loggedInUser, updateCartLength]);
 
+  // if (!loggedInUser) {
+  //   redirect("/login");
+  // }
+
   return (
     <>
-      <Container sx={{ padding: "25px" }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="h4" pb={3}>
-            Products
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            <Button
-              variant="contained"
-              onClick={() => router.push("/product/add")}
-            >
-              Add Product
-            </Button>
-            <Button variant="contained" onClick={() => router.push("/orders")}>
-              Orders
-            </Button>
-            <IconButton onClick={() => router.push("/cart")}>
-              <ShoppingCartIcon fontSize="medium" />
-              <CartBadge
-                badgeContent={cartLength}
-                color="primary"
-                overlap="circular"
-              />
-            </IconButton>
-            <LogoutIcon onClick={handleLogout} sx={{ cursor: "pointer" }} />
+      <AuthGuard>
+        <Container sx={{ padding: "25px" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="h4" pb={3}>
+              Products
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: "15px" }}>
+              <Button variant="contained" onClick={handleAddButton}>
+                Add Product
+              </Button>
+              <Button variant="contained" onClick={handleOrders}>
+                Orders
+              </Button>
+              <IconButton onClick={() => router.push("/cart")}>
+                <ShoppingCartIcon fontSize="medium" />
+                <CartBadge
+                  badgeContent={cartLength}
+                  color="primary"
+                  overlap="circular"
+                />
+              </IconButton>
+              <LogoutIcon onClick={handleLogout} sx={{ cursor: "pointer" }} />
+            </Box>
           </Box>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "20px",
-            marginTop: "20px",
-          }}
-        >
-          {products.map((product) => (
-            <Card
-              key={product.id}
-              sx={{
-                maxWidth: 345,
-                padding: "15px",
-                alignSelf: "normal",
-                flexWrap: "wrap",
-              }}
-              elevation={6}
-            >
-              <CardMedia
-                component="img"
-                height={160}
-                image={product.image}
-                alt={product.title}
-                sx={{ objectFit: "contain" }}
-              />
-              <CardContent>
-                <Typography variant="h6" padding="5px">
-                  <Tooltip title={product.title}>
-                    <Box
-                      sx={{
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        maxWidth: "250px",
-                      }}
-                    >
-                      {product.title}
-                    </Box>
-                  </Tooltip>
-                </Typography>
-                <Typography variant="h5" padding="5px">
-                  {product.price}
-                </Typography>
-                {product.quantity === 0 && (
-                  <Typography variant="h6" color="error">
-                    Out of Stock
-                  </Typography>
-                )}
-                {(quantities[product.id] !== 0 && addedProducts[product.id]) ||
-                isProductInCart(product.id) ? (
-                  <Card sx={{ width: "154px", height: "46px" }} elevation={4}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-evenly"
-                    >
-                      <RemoveIcon
-                        sx={{ cursor: "pointer" }}
-                        onClick={() => handleDecrement(product)}
-                      />
-                      <Divider orientation="vertical" flexItem />
-                      <Typography variant="h6">
-                        {quantities[product.id]}
-                      </Typography>
-                      <Divider orientation="vertical" flexItem />
-                      <AddIcon
-                        sx={{ cursor: "pointer" }}
-                        onClick={() => handleIncrement(product)}
-                      />
-                    </Stack>
-                  </Card>
-                ) : (
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={() => handleClick(product)}
-                  >
-                    Add to Cart
-                  </Button>
-                )}
-                <br />
-                <Button
-                  variant="contained"
-                  onClick={() => router.push(`/product/edit/${product.id}`)}
-                  sx={{ marginTop: "15px" }}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "20px",
+              marginTop: "20px",
+            }}
+          >
+            {products.length > 0 ? (
+              products.map((product) => (
+                <Card
+                  key={product.id}
+                  sx={{
+                    maxWidth: 345,
+                    padding: "15px",
+                    alignSelf: "normal",
+                    flexWrap: "wrap",
+                  }}
+                  elevation={6}
                 >
-                  Edit
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
-      </Container>
+                  <CardMedia
+                    component="img"
+                    height={160}
+                    image={product.image}
+                    alt={product.title}
+                    sx={{ objectFit: "contain" }}
+                  />
+                  <CardContent>
+                    <Typography variant="h6" padding="5px">
+                      <Tooltip title={product.title}>
+                        <Box
+                          sx={{
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: "250px",
+                          }}
+                        >
+                          {product.title}
+                        </Box>
+                      </Tooltip>
+                    </Typography>
+                    <Typography variant="h5" padding="5px">
+                      {product.price}
+                    </Typography>
+                    {product.quantity === 0 && (
+                      <Typography variant="h6" color="error">
+                        Out of Stock
+                      </Typography>
+                    )}
+                    {(quantities[product.id] !== 0 &&
+                      addedProducts[product.id]) ||
+                    isProductInCart(product.id) ? (
+                      <Card
+                        sx={{ width: "154px", height: "46px" }}
+                        elevation={4}
+                      >
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          justifyContent="space-evenly"
+                        >
+                          <RemoveIcon
+                            sx={{ cursor: "pointer" }}
+                            onClick={() => handleDecrement(product)}
+                          />
+                          <Divider orientation="vertical" flexItem />
+                          <Typography variant="h6">
+                            {quantities[product.id]}
+                          </Typography>
+                          <Divider orientation="vertical" flexItem />
+                          <AddIcon
+                            sx={{ cursor: "pointer" }}
+                            onClick={() => handleIncrement(product)}
+                          />
+                        </Stack>
+                      </Card>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={() => handleClick(product)}
+                      >
+                        Add to Cart
+                      </Button>
+                    )}
+                    <br />
+                    <Button
+                      variant="contained"
+                      onClick={() => handleEditButton(product.id)}
+                      sx={{ marginTop: "15px" }}
+                    >
+                      Edit
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card sx={{ padding: "20px", textAlign: "center" }} elevation={6}>
+                <Typography variant="h5" color="textSecondary">
+                  No products available. Please add products.
+                </Typography>
+              </Card>
+            )}
+          </Box>
+        </Container>
+      </AuthGuard>
     </>
   );
 };
