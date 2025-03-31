@@ -21,7 +21,8 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCartOutlined";
 import { useRouter } from "next/navigation";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { styled } from "@mui/material/styles";
-import Badge, { badgeClasses } from "@mui/material/Badge";
+import Badge from "@mui/material/Badge";
+import { badgeClasses } from "@mui/material";
 
 const CartBadge = styled(Badge)`
   & .${badgeClasses.badge} {
