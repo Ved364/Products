@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 type Props = {
-  id: string | undefined;
+  id?: string | undefined;
 };
 
 const ProductForm = (props: Props) => {
