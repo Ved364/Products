@@ -266,10 +266,20 @@ const CartPage = () => {
       localStorage.getItem("acknowledgedUpdates") || "{}"
     );
     setAcknowledgedUpdates(acknowledgedUpdates);
-    setLoggedInUser(JSON.parse(localStorage.getItem("loggedInUser") || '""'));
   }, []);
 
-  console.log(cartData);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+    if (!user) {
+      router.push("/login");
+    } else {
+      setLoggedInUser(user);
+    }
+  }, [router]);
+
+  if (!loggedInUser) {
+    return null;
+  }
   return (
     <>
       <Container>

@@ -4,7 +4,7 @@ import CustomTable from "@/component/custom-table";
 import { ITableColumn } from "@/types/common";
 import { IOrder } from "@/types/orders";
 import { Box, Button, Container, Divider, Typography } from "@mui/material";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const COLUMNS: ITableColumn[] = [
@@ -48,11 +48,19 @@ const OrdersPage = () => {
   useEffect(() => {
     const ordersData = JSON.parse(localStorage.getItem("orders") || "{}");
     setOrdersByUser(ordersData);
-    setLoggedInUser(JSON.parse(localStorage.getItem("loggedInUser") || "null"));
   }, []);
 
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
+    if (!user) {
+      router.push("/login");
+    } else {
+      setLoggedInUser(user);
+    }
+  }, [router]);
+
   if (!loggedInUser) {
-    redirect("/login");
+    return null;
   }
   return (
     <>
