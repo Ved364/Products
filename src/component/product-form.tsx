@@ -7,6 +7,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import RHFTextFieldArea from "./RhfTextField";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type Props = {
   id?: string | undefined;
@@ -85,7 +86,7 @@ const ProductForm = (props: Props) => {
       setLoggedInUser(user);
     }
 
-    if (user !== "admin@microfox.in") {
+    if (user !== "admin@microfox.co") {
       router.push("/");
       alert("Only admin can add or edit the products");
       return;
@@ -105,9 +106,29 @@ const ProductForm = (props: Props) => {
             height: "100vh",
           }}
         >
-          <Button variant="contained" onClick={() => router.push("/")}>
-            Go to Products
-          </Button>
+          <Box sx={{ justifySelf: "flex-end" }}>
+            <Card
+              sx={{
+                display: "inline-block",
+                alignItems: "center",
+                backgroundColor: "#1976d3",
+                mt: "15px",
+              }}
+            >
+              <Link
+                href="/"
+                style={{
+                  textDecoration: "none",
+                  color: "white",
+                  fontSize: "18px",
+                  padding: "10px 15px",
+                  display: "inline-block",
+                }}
+              >
+                Go to Products
+              </Link>
+            </Card>
+          </Box>
           <Box
             sx={{
               display: "flex",

@@ -24,6 +24,7 @@ const LoginPage = () => {
 
   const handleLogin = (data: ILogin) => {
     localStorage.setItem("loggedInUser", JSON.stringify(data.email));
+    window.dispatchEvent(new Event("authChanged"));
     router.push("/");
   };
 

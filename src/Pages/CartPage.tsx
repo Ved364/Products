@@ -17,6 +17,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { useRouter } from "next/navigation";
 import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 import { IProducts } from "@/types/product";
+import Link from "next/link";
 
 const CartPage = () => {
   const [cartData, setCartData] = useState<IProducts[]>([]);
@@ -48,6 +49,7 @@ const CartPage = () => {
 
     p[loggedInUser] = updatedUserProducts;
     localStorage.setItem("carts", JSON.stringify(p));
+    window.dispatchEvent(new Event("cartUpdated"));
 
     const specificUserProduct = userCarts.find(
       (userCart: IProducts) => userCart.id === cart.id
@@ -79,6 +81,7 @@ const CartPage = () => {
 
     p[loggedInUser] = updatedUserProducts;
     localStorage.setItem("carts", JSON.stringify(p));
+    window.dispatchEvent(new Event("cartUpdated"));
 
     const specificUserProduct = userCarts.find(
       (userCart: IProducts) => userCart.id === product.id
@@ -120,11 +123,6 @@ const CartPage = () => {
     const userCarts: IProducts[] = p[loggedInUser];
     const products = JSON.parse(localStorage.getItem("products") || "[]");
 
-    if (!userCarts || userCarts.length === 0) {
-      alert("Cart is empty. Please add products before placing an order.");
-      return;
-    }
-
     const updatedUserProducts = products.map((product: IProducts) => {
       const cartItem = userCarts.find(
         (item: IProducts) => item.id === product.id
@@ -148,6 +146,7 @@ const CartPage = () => {
     }
 
     localStorage.setItem("products", JSON.stringify(updatedUserProducts));
+    window.dispatchEvent(new Event("cartUpdated"));
 
     // const orderId = `ORD-${product.id}-${Date.now()}`;
 
@@ -177,8 +176,10 @@ const CartPage = () => {
 
     q[loggedInUser].push(orderDetails);
     localStorage.setItem("orders", JSON.stringify(q));
+    window.dispatchEvent(new Event("cartUpdated"));
     delete p[loggedInUser];
     localStorage.setItem("carts", JSON.stringify(p));
+    window.dispatchEvent(new Event("cartUpdated"));
 
     setCartData([]);
     setQuantities({});
@@ -316,9 +317,27 @@ const CartPage = () => {
         <Typography variant="h4" textAlign="center" mt={3}>
           Cart
         </Typography>
-        <Button variant="contained" onClick={() => router.push("/")}>
-          Go to Products
-        </Button>
+        <Card
+          sx={{
+            display: "inline-block",
+            alignItems: "center",
+            backgroundColor: "#1976d3",
+            mt: "15px",
+          }}
+        >
+          <Link
+            href="/"
+            style={{
+              textDecoration: "none",
+              color: "white",
+              fontSize: "18px",
+              padding: "10px 15px",
+              display: "inline-block",
+            }}
+          >
+            Go to Products
+          </Link>
+        </Card>
         <Box
           sx={{
             margin: "25px",
@@ -399,9 +418,27 @@ const CartPage = () => {
               >
                 Cart is empty.
               </Typography>
-              <Button size="large" onClick={() => router.push("/")}>
-                Go to Products
-              </Button>
+              <Card
+                sx={{
+                  display: "inline-block",
+                  alignItems: "center",
+                  backgroundColor: "#1976d3",
+                  mt: "15px",
+                }}
+              >
+                <Link
+                  href="/"
+                  style={{
+                    textDecoration: "none",
+                    color: "white",
+                    fontSize: "18px",
+                    padding: "10px 15px",
+                    display: "inline-block",
+                  }}
+                >
+                  Go to Products
+                </Link>
+              </Card>
             </>
           )}
           <Typography variant="h5">
@@ -412,7 +449,10 @@ const CartPage = () => {
         <Button
           variant="contained"
           onClick={handlePlaceOrder}
-          disabled={!acknowledged && Object.keys(priceUpdates).length > 0}
+          disabled={
+            (!acknowledged && Object.keys(priceUpdates).length > 0) ||
+            cartData.length === 0
+          }
         >
           Place Order
         </Button>

@@ -3,7 +3,8 @@
 import CustomTable from "@/component/custom-table";
 import { ITableColumn } from "@/types/common";
 import { IOrder } from "@/types/orders";
-import { Box, Button, Container, Divider, Typography } from "@mui/material";
+import { Box, Card, Container, Divider, Typography } from "@mui/material";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -69,9 +70,27 @@ const OrdersPage = () => {
           Orders
         </Typography>
         <Box justifySelf="flex-end">
-          <Button variant="contained" onClick={() => router.push("/")}>
-            Go to Products
-          </Button>
+          <Card
+            sx={{
+              display: "inline-block",
+              alignItems: "center",
+              backgroundColor: "#1976d3",
+              mt: "15px",
+            }}
+          >
+            <Link
+              href="/"
+              style={{
+                textDecoration: "none",
+                color: "white",
+                fontSize: "18px",
+                padding: "10px 15px",
+                display: "inline-block",
+              }}
+            >
+              Go to Products
+            </Link>
+          </Card>
         </Box>
 
         {Object.keys(ordersByUser).length > 0 ? (

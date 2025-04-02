@@ -9,27 +9,15 @@ import {
   CardMedia,
   Container,
   Divider,
-  IconButton,
   Stack,
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCartOutlined";
 import { useRouter } from "next/navigation";
-import LogoutIcon from "@mui/icons-material/Logout";
-import { styled } from "@mui/material/styles";
-import Badge from "@mui/material/Badge";
-import { badgeClasses } from "@mui/material";
-
-const CartBadge = styled(Badge)`
-  & .${badgeClasses.badge} {
-    top: -12px;
-    right: -6px;
-  }
-`;
+import Link from "next/link";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState<IProducts[]>([]);
@@ -38,7 +26,6 @@ const ProductsPage = () => {
   );
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [loggedInUser, setLoggedInUser] = useState<string>("");
-  const [cartLength, setCartLength] = useState<number>(0);
 
   const router = useRouter();
 
@@ -91,7 +78,6 @@ const ProductsPage = () => {
         ...prevState,
         [cart.id]: true,
       }));
-      setCartLength(userCarts.length);
     }
 
     const specificUserProduct = userCarts.find(
@@ -104,35 +90,7 @@ const ProductsPage = () => {
         [cart.id]: 1,
       }));
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("loggedInUser");
-    router.push("/login");
-  };
-
-  const handleAddButton = () => {
-    if (loggedInUser !== "admin@microfox.in") {
-      alert("Only admin can add products");
-      return;
-    }
-    router.push("/product/add");
-  };
-
-  const handleEditButton = (id: string) => {
-    if (loggedInUser !== "admin@microfox.in") {
-      alert("Only admin can edit products");
-      return;
-    }
-    router.push(`/product/edit/${id}`);
-  };
-
-  const handleOrders = () => {
-    if (loggedInUser !== "admin@microfox.in") {
-      router.push("/my-orders");
-      return;
-    }
-    router.push("/orders");
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
   const isProductInCart = (productId: string) => {
@@ -183,7 +141,7 @@ const ProductsPage = () => {
         [product.id]: specificUserProduct.quantity + 1,
       }));
     }
-    updateCartLength();
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
   const handleDecrement = (product: IProducts) => {
@@ -218,15 +176,8 @@ const ProductsPage = () => {
       }
       return updatedUserQuantities;
     });
-    updateCartLength();
+    window.dispatchEvent(new Event("cartUpdated"));
   };
-
-  const updateCartLength = useCallback(() => {
-    const cartKey = localStorage.getItem("carts");
-    const p = cartKey ? JSON.parse(cartKey) : {};
-    const userCarts: IProducts[] = p[loggedInUser] || [];
-    setCartLength(userCarts.length);
-  }, [loggedInUser]);
 
   useEffect(() => {
     setProducts(JSON.parse(localStorage.getItem("products") ?? "[]"));
@@ -249,8 +200,7 @@ const ProductsPage = () => {
       userCarts.map((product) => [product.id, product.quantity])
     );
     setQuantities(initialQuantities);
-    updateCartLength();
-  }, [loggedInUser, updateCartLength]);
+  }, [loggedInUser]);
 
   if (!loggedInUser) {
     return null;
@@ -269,23 +219,24 @@ const ProductsPage = () => {
           <Typography variant="h4" pb={3}>
             Products
           </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            <Button variant="contained" onClick={handleAddButton}>
-              Add Product
-            </Button>
-            <Button variant="contained" onClick={handleOrders}>
-              Orders
-            </Button>
-            <IconButton onClick={() => router.push("/cart")}>
-              <ShoppingCartIcon fontSize="medium" />
-              <CartBadge
-                badgeContent={cartLength}
-                color="primary"
-                overlap="circular"
-              />
-            </IconButton>
-            <LogoutIcon onClick={handleLogout} sx={{ cursor: "pointer" }} />
-          </Box>
+          {loggedInUser === "admin@microfox.co" ? (
+            <Card sx={{ display: "flex", alignItems: "center", gap: "15px" }}>
+              <Link
+                href="/product/add"
+                style={{
+                  textDecoration: "none",
+                  color: "white",
+                  fontSize: "18px",
+                  padding: "10px 15px",
+                  backgroundColor: "#1976d3",
+                }}
+              >
+                Add Product
+              </Link>
+            </Card>
+          ) : (
+            ""
+          )}
         </Box>
         <Box
           sx={{
@@ -373,13 +324,31 @@ const ProductsPage = () => {
                     </Button>
                   )}
                   <br />
-                  <Button
-                    variant="contained"
-                    onClick={() => handleEditButton(product.id)}
-                    sx={{ marginTop: "15px" }}
-                  >
-                    Edit
-                  </Button>
+                  {loggedInUser === "admin@microfox.co" ? (
+                    <Card
+                      sx={{
+                        display: "inline-block",
+                        alignItems: "center",
+                        backgroundColor: "#1976d3",
+                        mt: "15px",
+                      }}
+                    >
+                      <Link
+                        href={`/product/edit/${product.id}`}
+                        style={{
+                          textDecoration: "none",
+                          color: "white",
+                          fontSize: "18px",
+                          padding: "10px 15px",
+                          display: "inline-block",
+                        }}
+                      >
+                        Edit
+                      </Link>
+                    </Card>
+                  ) : (
+                    ""
+                  )}
                 </CardContent>
               </Card>
             ))
